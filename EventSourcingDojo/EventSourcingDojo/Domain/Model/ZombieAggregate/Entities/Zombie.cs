@@ -1,7 +1,6 @@
 ﻿namespace EventSourcingDojo.Domain.Model.ZombieAggregate.Entities
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using EventSourcingDojo.Domain.Abstraction;
     using EventSourcingDojo.Domain.Model.ZombieAggregate.Events;
@@ -69,6 +68,18 @@
             Mutate(walkedALongTime);
         }
 
+        public void EatBrain(IEventBus eventBus)
+        {
+            var breanEaten = new BrainEaten(
+                this.GetType().Name,
+                Id,
+                _version + 1);
+
+            eventBus.Push(breanEaten);
+
+            Mutate(breanEaten);
+        }
+
         public static Zombie Hydrate(IEnumerable<IDomainEvent> events)
         {
             var zombie = new Zombie();
@@ -79,6 +90,14 @@
             }
 
             return zombie;
+        }
+
+        public override string ToString()
+        {
+            return @$"
+Id : {Id}
+Nom : {Name}
+Vitalité : {Vitality}/{MaxVitality}";
         }
 
         private void Mutate(IDomainEvent @event)
@@ -105,6 +124,9 @@
                     break;
                 case WalkedALongTime evt:
                     Vitality = evt.VitalityLeft;
+                    break;
+                case BrainEaten _:
+                    Vitality = MaxVitality;
                     break;
                 default:
                     throw new Exception("Evenement non pris en charge par cette entité");

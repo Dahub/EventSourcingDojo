@@ -25,11 +25,21 @@
                 8,
                 4);
 
+            Console.WriteLine(zombie.ToString());
+
             zombie.WalkALongTime(eventBus);
+
+            Console.WriteLine(zombie.ToString());
+
+            zombie.EatBrain(eventBus);
+
+            Console.WriteLine(zombie.ToString());
 
             var allEvents = eventRepository.GetEvents(zombie.Id).ToList();
 
             var newZombie = Zombie.Hydrate(allEvents);
+
+            Console.WriteLine(newZombie.ToString());
         }
     }
 }
