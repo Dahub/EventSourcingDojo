@@ -1,17 +1,15 @@
 ﻿namespace EventSourcingDojo.Infrastructure
 {
-    using System.IO;
-    using System.Text.Json;
-    using EventSourcingDojo.Domain.Abstraction;
+    using Domain.Abstraction;
 
     public class OnFileEventStream : IEventStream
     {        
-        private readonly IEventRepository _eventRepository;
+        private readonly IEventDatabase _eventDatabase;
 
-        public OnFileEventStream(IEventRepository eventRepository) 
-            => _eventRepository = eventRepository;
+        public OnFileEventStream(IEventDatabase eventRepository) 
+            => _eventDatabase = eventRepository;
 
         public void AddEvent(IDomainEvent @event)
-            => _eventRepository.Save(@event);
+            => _eventDatabase.Save(@event);
     }
 }

@@ -6,7 +6,7 @@
     using System.Linq;
     using EventSourcingDojo.Domain.Abstraction;
 
-    public class OnFileEventRepository : IEventRepository
+    public class OnFileEventDatabase : IEventDatabase
     {
         private const string EventRepositoryPath = "./EventsRepository";
         private const string EventRepositoryFile = "Events.txt";
@@ -15,7 +15,7 @@
         {
             CreateRepositoryIfNotExists();
 
-            string inlinedEvent = Inline(@event);
+            var inlinedEvent = Inline(@event);
 
             File.AppendAllLines(EventFilePath(), new string[] { inlinedEvent });
         }
@@ -32,6 +32,17 @@
             }
         }
 
+        public void ResetDatabase()
+        {
+            try
+            {
+                File.Delete(EventFilePath());
+            }
+            catch
+            {
+            }
+        }
+
         private string Inline(IDomainEvent @event)
             => $"{@event.AggregateId}##{@event.EventName}##{@event.AggregateName}##{@event.AggregateVersion}##{Serialize(@event)}";
 
@@ -43,7 +54,7 @@
             }
             if (!File.Exists(EventRepositoryFile))
             {
-                File.Create(EventRepositoryFile);
+                using var _ = File.Create(EventRepositoryFile);
             }
         }
 

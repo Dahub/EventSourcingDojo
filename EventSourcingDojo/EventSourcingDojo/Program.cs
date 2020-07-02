@@ -1,45 +1,38 @@
 ﻿namespace EventSourcingDojo
 {
     using System;
-    using System.IO;
-    using System.Linq;
-    using EventSourcingDojo.Domain.Model.ZombieAggregate.Entities;
+    using Application;
     using EventSourcingDojo.Infrastructure;
 
     class Program
     {
         static void Main(string[] args)
         {
-            File.Delete("./EventsRepository/Events.txt");
-
             Console.WriteLine("Hello zombies!");
 
-            var eventRepository = new OnFileEventRepository();
-            var eventStream = new OnFileEventStream(eventRepository);
+            var eventDatabase = new OnFileEventDatabase();
+            var eventStream = new OnFileEventStream(eventDatabase);
             var eventBus = new EventBus(eventStream);
+            var spyier = new ConsoleSpyier();
 
-            var zombie = new Zombie(
+            eventDatabase.ResetDatabase();
+
+            var zombieId = Guid.NewGuid();
+            var zombieName = "Alexandre";
+
+            new CreateZombieCommand(
                 eventBus,
-                Guid.NewGuid(),
-                "Alexandre",
-                8,
-                4);
+                spyier).Execute(zombieId, zombieName);
 
-            Console.WriteLine(zombie.ToString());
+            new ZombieWalkCommand(
+                eventBus,
+                spyier,
+                eventDatabase).Execute(zombieId);
 
-            zombie.WalkALongTime(eventBus);
-
-            Console.WriteLine(zombie.ToString());
-
-            zombie.EatBrain(eventBus);
-
-            Console.WriteLine(zombie.ToString());
-
-            var allEvents = eventRepository.GetEvents(zombie.Id).ToList();
-
-            var newZombie = Zombie.Hydrate(allEvents);
-
-            Console.WriteLine(newZombie.ToString());
+            new ZombieEatBrainCommand(
+                eventBus,
+                spyier,
+                eventDatabase).Execute(zombieId);
         }
     }
 }
